@@ -1,0 +1,2 @@
+Hello from example.txt file
+This is the new line added 

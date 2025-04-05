@@ -19,3 +19,6 @@ console.log("Extension name : ", path.extname(__filename));
 //joining path
 const joinPath = path.join("/user", "documents", "node", "projects");
 console.log("Joined path : ",joinPath)
+
+
+
