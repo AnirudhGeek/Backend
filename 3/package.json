@@ -5,8 +5,9 @@
   "license": "ISC",
   "author": "",
   "type": "commonjs",
-  "main": "index.js",
+  "main": "1app.js",
   "scripts": {
+    "start" : "node 1app.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
