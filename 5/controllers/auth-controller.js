@@ -1,6 +1,7 @@
 /** @type {import("mongoose").Model} */
 const User = require("../models/user");
 const bcryptjs = require("bcryptjs");
+const jwt = require("jsonwebtoken");
 
 //register controller
 const registerUser = async (req, res) => {
@@ -21,7 +22,7 @@ const registerUser = async (req, res) => {
     }
 
     //hash user password
-    const salt = await bcryptjs.genSalt(10);
+    const salt = await bcryptjs.genSalt(10); //Generates a salt, which is a random string added to the password before hashing.10 is the number of rounds (more rounds = more secure but slower).This prevents attackers from using precomputed hash tables (like rainbow tables).
     const hasehedPassword = await bcryptjs.hash(password, salt); //string to be used in hash() is user input password
 
     //creating a new user and save in our database
@@ -57,6 +58,46 @@ const registerUser = async (req, res) => {
 //login controller
 const loginUser = async (req, res) => {
   try {
+    //extracting our username
+    const { username, password } = req.body;
+
+    //checking whether this username does exist in our database or not
+    const user = await User.findOne({ username });
+    if (!user) {
+      res.status(400).json({
+        success: false,
+        message: "User doen't exist",
+      });
+    }
+
+    //checking if the password is correct or not
+    const isPasswordMatch = await bcryptjs.compare(password, user.password);
+    if (!isPasswordMatch) {
+      res.status(400).json({
+        success: false,
+        message: "Invalid creadentials",
+      });
+    }
+
+    //create user token
+    const accessToken = jwt.sign(
+      {
+        userId: user._id,
+        username: user.username,
+        role: user.role,
+      },
+      process.env.JWT_SECRET_KEY,
+      {
+        expiresIn: "15m",
+      }
+    );
+
+    res.status(200).json({
+      success: true,
+      message: "Logged in Successful",
+      accessToken,
+      
+    });
   } catch (e) {
     console.log("Error => ", e);
     res.status(500).json({
