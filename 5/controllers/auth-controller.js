@@ -88,7 +88,7 @@ const loginUser = async (req, res) => {
       },
       process.env.JWT_SECRET_KEY,
       {
-        expiresIn: "15m",
+        expiresIn: "30m",  // this tells this token is valid for 15 minutes
       }
     );
 
@@ -96,8 +96,9 @@ const loginUser = async (req, res) => {
       success: true,
       message: "Logged in Successful",
       accessToken,
-      
     });
+
+
   } catch (e) {
     console.log("Error => ", e);
     res.status(500).json({
