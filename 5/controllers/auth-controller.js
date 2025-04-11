@@ -1,6 +1,7 @@
 /** @type {import("mongoose").Model} */
 const User = require("../models/user");
-const bcryptjs = require("bcryptjs");
+const bcrypt = require("bcryptjs");
+const bcryptjs = require('bcryptjs')
 const jwt = require("jsonwebtoken");
 
 //register controller
@@ -88,7 +89,7 @@ const loginUser = async (req, res) => {
       },
       process.env.JWT_SECRET_KEY,
       {
-        expiresIn: "30m",  // this tells this token is valid for 15 minutes
+        expiresIn: "30m", // this tells this token is valid for 15 minutes
       }
     );
 
@@ -97,8 +98,56 @@ const loginUser = async (req, res) => {
       message: "Logged in Successful",
       accessToken,
     });
+  } catch (e) {
+    console.log("Error => ", e);
+    res.status(500).json({
+      success: false,
+      message: "Some error occured! Please try again",
+    });
+  }
+};
 
+//changing password functionality
+const changePassword = async (req, res) => {
+  try {
+    //first we need to get the user id and that we can get from authentication middleware
+    const userId = req.userInfo.userId;
 
+    //extract old and new password
+    const { oldPassword, newPassword } = req.body;
+
+    //find the current logged in user
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return res.status(400).json({
+        successs: false,
+        message: "User not found.",
+      });
+    }
+
+    //check if the old password is correct
+    const isPasswordMatch = await bcrypt.compare(oldPassword, user.password);
+
+    if (!isPasswordMatch) {
+      res.status(400).json({
+        success: false,
+        message: "Old password is not correct please add a valid password.",
+      });
+    }
+
+    //hash the new password here
+    const salt =await bcrypt.genSalt(10);
+    const newHashedPassword = await bcrypt.hash(newPassword, salt);
+
+    //update user password
+    user.password = newHashedPassword;
+    await user.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Password updated successfully",
+    });
   } catch (e) {
     console.log("Error => ", e);
     res.status(500).json({
@@ -111,4 +160,5 @@ const loginUser = async (req, res) => {
 module.exports = {
   registerUser,
   loginUser,
+  changePassword,
 };
