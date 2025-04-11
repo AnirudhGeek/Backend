@@ -45,8 +45,26 @@ const uploadImageController = async (req, res) => {
 };
 
 
-
+//fetching the image
+const fetchImagesController = async(req,res)=>{
+  try{
+    const images = await Image.find({})
+    if(images){
+      res.status(200).json({
+        success : true,
+        data : images,
+      })
+    }
+  }catch(e){
+    console.log("Error => ", e);
+    res.status(500).json({
+      success: false,
+      message: "Something went wrong! Please try again.",
+    });
+  }
+}
 
 module.exports= {
     uploadImageController,
+    fetchImagesController
 }
