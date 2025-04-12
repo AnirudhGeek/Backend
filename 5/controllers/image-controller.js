@@ -45,10 +45,24 @@ const uploadImageController = async (req, res) => {
 //fetching the image
 const fetchImagesController = async (req, res) => {
   try {
-    const images = await Image.find({});
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 5; //by default we wamt ot render 5 images
+    const skip = (page - 1) * limit;
+
+    const sortBy = req.query.sortBy || "createdAt";
+    const sortOrder = req.query.sortOrder == "asc" ? 1 : -1;
+    const totalImgages = await Image.countDocuments();
+    const totalPages = Math.ceil(totalImgages / limit);
+
+    const sortObj = {};
+    sortObj[sortBy] = sortOrder
+    const images = await Image.find().sort(sortObj).skip(skip).limit(limit);
     if (images) {
       res.status(200).json({
         success: true,
+        currentPage : page,
+        totalPages : totalPages,
+        totalImgages : totalImgages, 
         data: images,
       });
     }
